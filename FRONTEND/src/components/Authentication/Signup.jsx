@@ -6,102 +6,180 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [pic, setPic] = useState(null);
+  const [confirmpassword, setConfirmpassword] = useState("");
+  const [pic, setPic] = useState();
+  const [picLoading, setPicLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  
+
+  // Function to upload the profile picture to Cloudinary securely
+  const postDetails = (pics) => {
+    setPicLoading(true);
+    if (pics === undefined) {
+      alert("Please Select an Image!");
+      setPicLoading(false);
+      return;
+    }
+
+    if (pics.type === "image/jpeg" || pics.type === "image/png") {
+      const data = new FormData();
+      data.append("file", pics);
+      
+      // --- NEW CODE: Using Cloudinary Environment Variables ---
+      data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+      data.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
+
+      fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: data,
+      })
+      // --------------------------------------------------------
+        .then((res) => {
+          if (!res.ok) throw new Error("Upload failed");
+          return res.json();
+        })
+        .then((data) => {
+          setPic(data.url.toString()); // Save the image URL to state
+          setPicLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Image upload failed. Please try again.");
+          setPicLoading(false);
+        });
+    } else {
+      alert("Please Select a valid Image file (JPEG/PNG)");
+      setPicLoading(false);
+    }
+  };
+
   const submitHandler = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    setLoading(true);
 
-  // 1. Check if passwords match
-  if (password !== confirmPassword) {
-    alert("Passwords Do Not Match");
-    return;
-  }
+    if (!name || !email || !password || !confirmpassword) {
+      alert("Please Fill all the Fields");
+      setLoading(false);
+      return;
+    }
 
-  try {
-    // 2. Configure the headers to tell the backend we are sending JSON
-    const config = {
-      headers: {
-        "Content-type": "application/json",
-      },
-    };
+    if (password !== confirmpassword) {
+      alert("Passwords Do Not Match");
+      setLoading(false);
+      return;
+    }
 
-    // 3. Make the API call to your backend
-    const { data } = await axios.post(
-      "http://localhost:5000/api/user",
-      { name, email, password },
-      config
-    );
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
 
-    alert("Registration Successful!");
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user`,
+        {
+          name,
+          email,
+          password,
+          pic,
+        },
+        config
+      );
+      // ----------------------------------------------------------
 
-    // 4. Save the user data (including the JWT token) to the browser
-    localStorage.setItem("userInfo", JSON.stringify(data));
-
-    // 5. Redirect the user to the chats page
-    navigate("/chats");
-  } catch (error) {
-    alert(error.response?.data?.message || "An error occurred during registration");
-  }
-};
+      alert("Registration Successful!");
+      
+      // Save the user data (including the JWT token) to local storage
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading(false);
+      
+      // Redirect the user to the chat page
+      navigate("/chats");
+    } catch (error) {
+      alert("Error Occurred! Registration failed.");
+      setLoading(false);
+    }
+  };
 
   return (
-    <form onSubmit={submitHandler} className="space-y-4">
+    <form onSubmit={submitHandler} className="flex flex-col gap-4 w-full mt-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Name</label>
+        <label className="block text-sm font-medium text-gray-800 mb-1 drop-shadow-sm">
+          Name
+        </label>
         <input
           type="text"
-          placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-2 border border-white/60 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 backdrop-blur-sm text-gray-900 shadow-inner placeholder-gray-500"
+          placeholder="Enter your name"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Email Address</label>
+        <label className="block text-sm font-medium text-gray-800 mb-1 drop-shadow-sm">
+          Email Address
+        </label>
         <input
           type="email"
-          placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-2 border border-white/60 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 backdrop-blur-sm text-gray-900 shadow-inner placeholder-gray-500"
+          placeholder="Enter your email"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Password</label>
+        <label className="block text-sm font-medium text-gray-800 mb-1 drop-shadow-sm">
+          Password
+        </label>
         <input
           type="password"
-          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-2 border border-white/60 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 backdrop-blur-sm text-gray-900 shadow-inner placeholder-gray-500"
+          placeholder="Enter your password"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <label className="block text-sm font-medium text-gray-800 mb-1 drop-shadow-sm">
+          Confirm Password
+        </label>
         <input
           type="password"
+          value={confirmpassword}
+          onChange={(e) => setConfirmpassword(e.target.value)}
+          className="w-full px-4 py-2 border border-white/60 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 backdrop-blur-sm text-gray-900 shadow-inner placeholder-gray-500"
           placeholder="Confirm your password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-800 mb-1 drop-shadow-sm">
+          Upload your Picture
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => postDetails(e.target.files[0])}
+          className="w-full px-4 py-2 border border-white/60 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 backdrop-blur-sm text-gray-900 shadow-inner file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition"
         />
       </div>
 
       <button
         type="submit"
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mt-6"
+        disabled={loading || picLoading}
+        className="w-full bg-blue-600/90 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition mt-4 disabled:opacity-50 shadow-md"
       >
-        Sign Up
+        {picLoading ? "Uploading Image..." : loading ? "Signing up..." : "Sign Up"}
       </button>
     </form>
   );

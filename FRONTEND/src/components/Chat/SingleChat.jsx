@@ -6,8 +6,9 @@ import ScrollableChat from "./ScrollableChat";
 import io from "socket.io-client";
 import UpdateGroupChatModal from "./UpdateGroupChatModal";
 
-// Using the environment variable for the backend URL
+// --- NEW CODE: Using the environment variable for the backend URL ---
 const ENDPOINT = import.meta.env.VITE_BACKEND_URL; 
+// --------------------------------------------------------------------
 var socket, selectedChatCompare;
 
 const SingleChat = () => {
@@ -50,7 +51,9 @@ const SingleChat = () => {
       };
 
       setLoading(true);
+      // --- NEW CODE: Dynamic backend URL ---
       const { data } = await axios.get(`${ENDPOINT}/api/message/${selectedChat._id}`, config);
+      // -------------------------------------
       setMessages(data);
       setLoading(false);
 
@@ -98,6 +101,7 @@ const SingleChat = () => {
 
       setNewMessage(""); 
 
+      // --- NEW CODE: Dynamic backend URL ---
       const { data } = await axios.post(
         `${ENDPOINT}/api/message`,
         {
@@ -106,6 +110,7 @@ const SingleChat = () => {
         },
         config
       );
+      // -------------------------------------
 
       setMessages([...messages, data]);
       socket.emit("new message", data);

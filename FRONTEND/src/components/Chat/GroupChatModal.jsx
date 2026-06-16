@@ -26,7 +26,14 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`http://localhost:5000/api/user?search=${search}`, config);
+      
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user?search=${search}`, 
+        config
+      );
+      // ----------------------------------------------------------
+      
       setLoading(false);
       setSearchResult(data);
     } catch (error) {
@@ -63,14 +70,16 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
         },
       };
 
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
       const { data } = await axios.post(
-        "http://localhost:5000/api/chat/group",
+        `${import.meta.env.VITE_BACKEND_URL}/api/chat/group`,
         {
           name: groupChatName,
           users: JSON.stringify(selectedUsers.map((u) => u._id)),
         },
         config
       );
+      // ----------------------------------------------------------
 
       setChats([data, ...chats]); // Add the new group to the top of your chat list
       onClose(); // Close the modal
@@ -84,17 +93,21 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+    // Glassmorphism Overlay
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity">
+      
+      {/* Glassmorphism Modal Card */}
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-6 relative border border-white/50">
+        
         {/* Close Button */}
         <button 
           onClick={onClose} 
-          className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl font-bold"
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-2xl font-bold drop-shadow-sm transition"
         >
           &times;
         </button>
 
-        <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 drop-shadow-sm">
           Create Group Chat
         </h2>
 
@@ -104,7 +117,7 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
             type="text"
             placeholder="Chat Name"
             onChange={(e) => setGroupChatName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-white/60 bg-white/50 backdrop-blur-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner placeholder-gray-500 text-gray-900"
           />
 
           {/* User Search Input */}
@@ -112,7 +125,7 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
             type="text"
             placeholder="Add Users eg: John, Jane"
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-white/60 bg-white/50 backdrop-blur-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner placeholder-gray-500 text-gray-900"
           />
 
           {/* Render the Selected Users as little tags */}
@@ -120,7 +133,7 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
             {selectedUsers.map((u) => (
               <span
                 key={u._id}
-                className="bg-blue-600 text-white px-2 py-1 rounded-md text-sm flex items-center cursor-pointer hover:bg-red-500 transition"
+                className="bg-blue-600/90 text-white px-2 py-1 rounded-md text-sm flex items-center cursor-pointer hover:bg-red-500 transition shadow-sm border border-white/20"
                 onClick={() => handleDelete(u)}
                 title="Click to remove"
               >
@@ -132,18 +145,18 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
           {/* Render Search Results */}
           <div className="max-h-40 overflow-y-auto w-full">
             {loading ? (
-              <div className="text-center text-sm text-gray-500">Loading...</div>
+              <div className="text-center text-sm font-medium text-gray-700">Loading...</div>
             ) : (
               searchResult?.slice(0, 4).map((user) => ( // Only show top 4 results
                 <div
                   key={user._id}
                   onClick={() => handleGroup(user)}
-                  className="flex items-center p-2 mb-2 bg-gray-50 hover:bg-blue-100 rounded cursor-pointer transition border border-transparent hover:border-blue-300"
+                  className="flex items-center p-2 mb-2 bg-white/40 hover:bg-white/70 rounded-lg cursor-pointer transition shadow-sm border border-white/50"
                 >
-                  <img src={user.pic} className="w-8 h-8 rounded-full mr-3" alt="avatar" />
+                  <img src={user.pic} className="w-8 h-8 rounded-full mr-3 shadow-sm" alt="avatar" />
                   <div>
-                    <p className="font-semibold text-sm">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="font-bold text-sm text-gray-800">{user.name}</p>
+                    <p className="text-xs text-gray-600 font-medium">{user.email}</p>
                   </div>
                 </div>
               ))
@@ -155,7 +168,7 @@ const GroupChatModal = ({ isOpen, onClose, children }) => {
         <div className="mt-6 flex justify-end">
           <button
             onClick={handleSubmit}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition shadow-sm font-medium"
+            className="bg-blue-600/90 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-md font-bold"
           >
             Create Chat
           </button>

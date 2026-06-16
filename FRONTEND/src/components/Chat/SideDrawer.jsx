@@ -36,7 +36,13 @@ const SideDrawer = () => {
         },
       };
 
-      const { data } = await axios.get(`http://localhost:5000/api/user?search=${search}`, config);
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user?search=${search}`, 
+        config
+      );
+      // ----------------------------------------------------------
+      
       setLoading(false);
       setSearchResult(data);
     } catch (error) {
@@ -55,7 +61,13 @@ const SideDrawer = () => {
         },
       };
 
-      const { data } = await axios.post("http://localhost:5000/api/chat", { userId }, config);
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/chat`, 
+        { userId }, 
+        config
+      );
+      // ----------------------------------------------------------
 
       // If this is a brand new chat, add it to our list of chats
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);

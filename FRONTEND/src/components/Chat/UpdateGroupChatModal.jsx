@@ -13,7 +13,6 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
 
   // Function to remove a user (or leave the group yourself)
   const handleRemove = async (user1) => {
-    // Check if the person clicking is an admin OR if they are trying to remove themselves
     if (selectedChat.groupAdmin._id !== user._id && user1._id !== user._id) {
       alert("Only admins can remove someone!");
       return;
@@ -24,15 +23,17 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
       const config = {
         headers: { Authorization: `Bearer ${user.token}` },
       };
+      
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
       const { data } = await axios.put(
-        `http://localhost:5000/api/chat/groupremove`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/chat/groupremove`,
         { chatId: selectedChat._id, userId: user1._id },
         config
       );
+      // ----------------------------------------------------------
 
-      // If you left the group, clear the active chat. Otherwise, update the chat data.
       user1._id === user._id ? setSelectedChat() : setSelectedChat(data);
-      fetchMessages(); // Refresh the messages
+      fetchMessages(); 
       setLoading(false);
     } catch (error) {
       alert("Error removing user!");
@@ -56,11 +57,14 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
       const config = {
         headers: { Authorization: `Bearer ${user.token}` },
       };
+      
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
       const { data } = await axios.put(
-        `http://localhost:5000/api/chat/groupadd`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/chat/groupadd`,
         { chatId: selectedChat._id, userId: user1._id },
         config
       );
+      // ----------------------------------------------------------
 
       setSelectedChat(data);
       setLoading(false);
@@ -79,11 +83,14 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
       const config = {
         headers: { Authorization: `Bearer ${user.token}` },
       };
+      
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
       const { data } = await axios.put(
-        `http://localhost:5000/api/chat/rename`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/chat/rename`,
         { chatId: selectedChat._id, chatName: groupChatName },
         config
       );
+      // ----------------------------------------------------------
 
       setSelectedChat(data);
       setRenameLoading(false);
@@ -105,7 +112,14 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
       const config = {
         headers: { Authorization: `Bearer ${user.token}` },
       };
-      const { data } = await axios.get(`http://localhost:5000/api/user?search=${search}`, config);
+      
+      // --- THE CRITICAL UPDATE: Using the dynamic backend URL ---
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user?search=${search}`, 
+        config
+      );
+      // ----------------------------------------------------------
+      
       setLoading(false);
       setSearchResult(data);
     } catch (error) {
@@ -117,13 +131,21 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl font-bold">
+    // Glassmorphism Overlay
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity">
+      
+      {/* Glassmorphism Modal Card */}
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-6 relative border border-white/50">
+        
+        {/* Close Button */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-2xl font-bold drop-shadow-sm transition"
+        >
           &times;
         </button>
 
-        <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 drop-shadow-sm">
           {selectedChat.chatName.toUpperCase()}
         </h2>
 
@@ -132,7 +154,7 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
           {selectedChat.users.map((u) => (
             <span
               key={u._id}
-              className="bg-purple-600 text-white px-2 py-1 rounded-md text-sm flex items-center cursor-pointer hover:bg-red-500 transition"
+              className="bg-purple-600/90 text-white px-2 py-1 rounded-md text-sm flex items-center cursor-pointer hover:bg-red-500 transition shadow-sm border border-white/20"
               onClick={() => handleRemove(u)}
               title="Click to remove"
             >
@@ -150,12 +172,12 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
             placeholder="Rename Group"
             value={groupChatName}
             onChange={(e) => setGroupChatName(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-white/60 bg-white/50 backdrop-blur-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner placeholder-gray-500 text-gray-900"
           />
           <button
             onClick={handleRename}
             disabled={renameloading}
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow-sm font-medium disabled:opacity-50"
+            className="bg-green-600/90 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition shadow-md font-bold disabled:opacity-50"
           >
             Update
           </button>
@@ -167,25 +189,25 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
             type="text"
             placeholder="Add User to group"
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-white/60 bg-white/50 backdrop-blur-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner placeholder-gray-500 text-gray-900"
           />
         </div>
 
         {/* Search Results */}
         <div className="max-h-40 overflow-y-auto w-full mb-4">
           {loading ? (
-            <div className="text-center text-sm text-gray-500">Loading...</div>
+            <div className="text-center text-sm font-medium text-gray-700">Loading...</div>
           ) : (
             searchResult?.slice(0, 4).map((user) => (
               <div
                 key={user._id}
                 onClick={() => handleAddUser(user)}
-                className="flex items-center p-2 mb-2 bg-gray-50 hover:bg-blue-100 rounded cursor-pointer transition border border-transparent hover:border-blue-300"
+                className="flex items-center p-2 mb-2 bg-white/40 hover:bg-white/70 rounded-lg cursor-pointer transition shadow-sm border border-white/50"
               >
-                <img src={user.pic} className="w-8 h-8 rounded-full mr-3" alt="avatar" />
+                <img src={user.pic} className="w-8 h-8 rounded-full mr-3 shadow-sm" alt="avatar" />
                 <div>
-                  <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+                  <p className="font-bold text-sm text-gray-800">{user.name}</p>
+                  <p className="text-xs text-gray-600 font-medium">{user.email}</p>
                 </div>
               </div>
             ))
@@ -196,7 +218,7 @@ const UpdateGroupChatModal = ({ fetchMessages, isOpen, onClose }) => {
         <div className="mt-6 flex justify-end">
           <button
             onClick={() => handleRemove(user)}
-            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition shadow-sm font-medium"
+            className="bg-red-600/90 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition shadow-md font-bold"
           >
             Leave Group
           </button>
