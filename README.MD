@@ -6,6 +6,7 @@
 !(https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 !(https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white)
 !(https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Deployed-success)
 
 A full-stack, real-time messaging application built with the MERN stack. Featuring a sleek, modern Glassmorphism UI, this app supports live one-on-one conversations, dynamic group chats, and secure image sharing.
 
